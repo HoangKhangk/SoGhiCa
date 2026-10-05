@@ -1,0 +1,16 @@
+{
+  "name": "Sổ Ghi Ca — Nhật ký đi làm thêm",
+  "short_name": "Sổ Ghi Ca",
+  "description": "Ghi ca làm, tính lương và giữ lại những ngày cố gắng của bạn.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f7fc",
+  "theme_color": "#008763",
+  "icons": [
+    { "src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

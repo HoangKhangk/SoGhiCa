@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#008763">
+  <meta name="description"
+    content="Sổ ghi ca cá nhân: lưu ngày làm, tự tính giờ và tiền lương, dùng được cả khi không có mạng.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sổ Ghi Ca">
+  <title>Sổ Ghi Ca · Nhật ký đi làm thêm</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" class="svg-defs" aria-hidden="true">
+    <defs>
+      <symbol id="i-book" viewBox="0 0 24 24">
+        <path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1Zm0 0v15M5 8h3m-3 4h3m8-4h3m-3 4h3" />
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M7 3v4m10-4v4M3 11h18m-14 5 3 3 6-6" />
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v5l3 2M9 2h6m-3 0v3m7 1 2 2" />
+      </symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24">
+        <path d="m9 6 6 6-6 6" />
+      </symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="m15 5 4 4M4 20l5-1L21 7a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="i-sparkle" viewBox="0 0 24 24">
+        <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z" />
+      </symbol>
+      <symbol id="i-save" viewBox="0 0 24 24">
+        <path d="M6 3h12v18l-6-4-6 4V3Zm3 5h6m-3-3v6" />
+      </symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24">
+        <path
+          d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M6 18 18 6" />
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
+      </symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24">
+        <rect x="6" y="2" width="12" height="20" rx="3" />
+        <path d="M10 5h4m-3 14h2" />
+      </symbol>
+      <symbol id="i-coffee" viewBox="0 0 24 24">
+        <path d="M4 8h12v7a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Zm12 1h2a3 3 0 1 1 0 6h-2M7 2v3m5-3v3M2 22h18" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6" />
+      </symbol>
+    </defs>
+  </svg>
+  <a class="skip-link" href="#shift-form">Đến phần ghi ca</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="Sổ Ghi Ca — Trang chính">
+        <span class="brand-mark"><svg>
+            <use href="#i-book" />
+          </svg></span>
+        <span><span class="brand-line">Sổ Ghi Ca <span class="personal-tag">Cá nhân</span></span><span
+            class="brand-subtitle">Nhật ký đi làm thêm</span></span>
+      </a>
+      <div class="month-picker" aria-label="Chọn tháng thống kê">
+        <button type="button" id="previous-month" class="icon-button" aria-label="Tháng trước"><svg class="icon flip">
+            <use href="#i-chevron" />
+          </svg></button>
+        <label class="month-label"><svg class="icon">
+            <use href="#i-calendar" />
+          </svg><span id="month-title"></span><input type="month" id="month-input" aria-label="Chọn tháng" min="2000-01"
+            max="2100-12"></label>
+        <button type="button" id="next-month" class="icon-button" aria-label="Tháng sau"><svg class="icon">
+            <use href="#i-chevron" />
+          </svg></button>
+      </div>
+      <button class="profile" id="open-settings" type="button" aria-label="Mở hồ sơ và cài đặt">
+        <span class="profile-copy"><strong id="profile-name">Bạn</strong><span><span class="tiny-sparkle">✦</span> <span
+              id="profile-subtitle">Chăm chỉ mỗi ngày</span></span></span>
+        <span id="profile-avatar" class="avatar">B</span>
+      </button>
+    </div>
+  </header>
+  <main class="main-container">
+    <div id="storage-warning" class="notice error-notice" role="alert" hidden></div>
+    <div id="demo-notice" class="notice demo-notice" hidden><span>Đang xem dữ liệu mẫu · Không tính vào sổ của
+        bạn</span><button type="button" id="exit-demo">Về sổ của tôi <svg class="icon">
+          <use href="#i-close" />
+        </svg></button></div>
+    <section class="income-banner" aria-labelledby="income-label">
+      <div class="income-copy">
+        <h1 id="income-label">💰 THU NHẬP <span id="income-month">THÁNG NÀY</span> CỦA BẠN</h1>
+        <div class="income-value"><span id="total-income">0</span><span class="currency">₫</span></div>
+        <p>Đã gồm lương theo giờ & tiền tip thưởng thêm</p>
+      </div>
+      <div class="stat-group">
+        <div class="stat"><span class="stat-icon"><svg>
+              <use href="#i-clock" />
+            </svg></span>
+          <div><strong><span id="total-hours">0</span> giờ</strong><span>Tổng giờ làm</span></div>
+        </div>
+        <div class="stat"><span class="stat-icon"><svg>
+              <use href="#i-calendar" />
+            </svg></span>
+          <div><strong><span id="total-days">0</span> ngày</strong><span>Đã đi làm</span></div>
+        </div>
+      </div>
+    </section>
+    <div class="workspace">
+      <section class="card entry-card" aria-labelledby="form-heading">
+        <div class="section-heading">
+          <h2 id="form-heading"><svg class="icon">
+              <use href="#i-edit" />
+            </svg><span id="form-title">Ghi nhanh ca làm</span></h2><button id="today-button" class="small-tag"
+            type="button">Hôm nay</button>
+        </div>
+        <form id="shift-form">
+          <div class="field"><label for="shift-date">🗓️ Ngày làm</label><input type="date" id="shift-date" name="date"
+              min="2000-01-01" max="2100-12-31" required></div>
+          <fieldset class="field">
+            <legend>📍 Nơi làm việc</legend>
+            <div class="segmented job-picker" id="job-picker"><button type="button" class="selected" data-job="cafe"
+                aria-pressed="true">☕ <span id="cafe-label">Quán Cafe (25k/h)</span></button><button type="button"
+                data-job="tutor" aria-pressed="false">📚 <span id="tutor-label">Gia sư (120k/h)</span></button></div>
+            <label class="sr-only" for="workplace">Tên nơi làm việc</label><input id="workplace" name="workplace"
+              maxlength="80" placeholder="Tên quán, công ty hoặc học sinh" required>
+          </fieldset>
+          <fieldset class="field time-field">
+            <legend>⌚ Khung giờ làm (Từ – Đến) <strong id="duration-label">4 giờ</strong></legend>
+            <div class="two-columns">
+              <div><label class="sub-label" for="start-time">Giờ bắt đầu</label><input type="text" id="start-time"
+                  name="start" value="14:00" placeholder="14:00" inputmode="text" maxlength="5"
+                  pattern="(?:[01]?[0-9]|2[0-3])(?::?[0-5][0-9])?" autocomplete="off" spellcheck="false"
+                  title="Nhập giờ 24 tiếng, ví dụ 8:30 hoặc 1830." aria-describedby="time-entry-hint" required></div>
+              <div><label class="sub-label" for="end-time">Giờ kết thúc</label><input type="text" id="end-time"
+                  name="end" value="18:00" placeholder="18:00" inputmode="text" maxlength="5"
+                  pattern="(?:[01]?[0-9]|2[0-3])(?::?[0-5][0-9])?" autocomplete="off" spellcheck="false"
+                  title="Nhập giờ 24 tiếng, ví dụ 8:30 hoặc 1830." aria-describedby="time-entry-hint" required></div>
+            </div>
+            <p class="time-input-hint" id="time-entry-hint">Giờ 24 tiếng · Có thể gõ 830 hoặc 18:30.</p>
+            <div class="time-summary"><span><svg class="icon">
+                  <use href="#i-clock" />
+                </svg><span id="time-description">Từ 14:00 đến 18:00</span></span><span id="auto-description">Tự động
+                tính: 4 tiếng</span></div>
+            <div class="segmented hour-presets" aria-label="Chọn nhanh số giờ"><button type="button"
+                data-hours="3">3h</button><button type="button" class="selected" data-hours="4">4h</button><button
+                type="button" data-hours="5">5h</button><button type="button" data-hours="6">6h</button><button
+                type="button" data-hours="8">8h</button></div>
+            <div class="two-columns">
+              <div><label class="sub-label" for="manual-hours">Hoặc gõ số giờ</label><input type="number"
+                  id="manual-hours" name="hours" value="4" min="0.016666" max="24" step="any" inputmode="decimal"
+                  required></div>
+              <div><label class="sub-label" for="hourly-rate">Mức lương/giờ (đ)</label><input type="number"
+                  id="hourly-rate" name="rate" value="25000" min="0" max="1000000000" step="1" inputmode="numeric"
+                  required></div>
+            </div>
+          </fieldset>
+          <div class="field"><label for="shift-tip">🎁 Tiền tip / thưởng thêm hôm nay (nếu có)</label><input
+              type="number" id="shift-tip" name="tip" value="0" min="0" max="1000000000" step="1" inputmode="numeric"
+              required></div>
+          <div class="estimate" aria-live="polite">
+            <div><span>✦ Ước tính ca này nhận:</span><small id="estimate-formula">(4h × 25.000đ)</small></div><strong
+              id="estimated-pay">100.000₫</strong>
+          </div>
+          <p class="form-error" id="form-error" role="alert" hidden></p>
+          <button type="submit" class="primary-button save-button"><svg class="icon">
+              <use href="#i-save" />
+            </svg><span id="save-label">Lưu ngày làm này</span></button>
+          <button type="button" class="cancel-edit" id="cancel-edit" hidden>Hủy chỉnh sửa</button>
+        </form>
+      </section>
+      <section class="journal" aria-labelledby="journal-title">
+        <div class="card journal-header">
+          <div>
+            <h2 id="journal-title"><svg class="icon">
+                <use href="#i-book" />
+              </svg>Sổ nhật ký ngày làm</h2>
+            <p>Các buổi đi làm gần đây của bạn</p>
+          </div>
+          <div class="segmented journal-filters" aria-label="Lọc công việc"><button type="button" data-filter="all"
+              class="selected" aria-pressed="true">Tất cả</button><button type="button" data-filter="cafe"
+              aria-pressed="false">Quán Cafe</button><button type="button" data-filter="tutor" aria-pressed="false">Gia
+              sư</button></div>
+        </div>
+        <div id="shift-list" class="shift-list" aria-live="polite"></div>
+        <div class="journal-bottom"><span id="journal-count"></span><button type="button" id="export-csv"
+            class="text-button"><svg class="icon">
+              <use href="#i-download" />
+            </svg>Xuất bảng lương</button></div>
+      </section>
+    </div>
+    <div class="utility-row"><span id="local-status"><svg class="icon">
+          <use href="#i-check" />
+        </svg>Dữ liệu lưu trên thiết bị này</span>
+      <div><button type="button" class="text-button" id="backup-shortcut">Sao lưu dữ liệu</button><span
+          class="utility-divider">·</span><button type="button" class="text-button" id="open-install"><svg class="icon">
+            <use href="#i-phone" />
+          </svg>Cài lên điện thoại</button></div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div><span><svg class="icon">
+          <use href="#i-heart" />
+        </svg>Sổ Ghi Ca Cá Nhân <span class="footer-extra">– Đồng hành cùng bạn trên đường tích
+          lũy</span></span><span>Dễ thương · Đơn giản · Tự động tính tiền</span></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div id="update-notice" class="update-notice" hidden><span>Đã có phiên bản mới.</span><button type="button"
+      id="apply-update">Cập nhật</button><button type="button" id="dismiss-update" aria-label="Để sau">×</button></div>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-header">
+      <h2 id="settings-title">Góc cá nhân</h2><button type="button" class="icon-button" data-close-dialog
+        aria-label="Đóng cài đặt"><svg class="icon">
+          <use href="#i-close" />
+        </svg></button>
+    </div>
+    <form id="settings-form">
+      <div class="field"><label for="setting-name">Tên của bạn</label><input id="setting-name" maxlength="40" required>
+      </div>
+      <div class="field"><label for="setting-subtitle">Một dòng giới thiệu</label><input id="setting-subtitle"
+          maxlength="60" placeholder="Sinh viên chăm chỉ"></div>
+      <h3>☕ Công việc tại quán</h3>
+      <div class="field"><label for="setting-cafe-name">Tên nơi làm việc</label><input id="setting-cafe-name"
+          maxlength="80" required></div>
+      <div class="field"><label for="setting-cafe-rate">Lương mỗi giờ (đ)</label><input id="setting-cafe-rate"
+          type="number" min="0" max="1000000000" step="1" inputmode="numeric" required></div>
+      <h3>📚 Công việc gia sư</h3>
+      <div class="field"><label for="setting-tutor-name">Tên nơi làm việc</label><input id="setting-tutor-name"
+          maxlength="80" required></div>
+      <div class="field"><label for="setting-tutor-rate">Lương mỗi giờ (đ)</label><input id="setting-tutor-rate"
+          type="number" min="0" max="1000000000" step="1" inputmode="numeric" required></div>
+      <p class="helper-text">Mức lương mới chỉ áp dụng cho ca tạo sau. Ca đã lưu giữ nguyên mức lương cũ.</p>
+      <p id="settings-error" class="form-error" role="alert" hidden></p><button type="submit" class="primary-button">Lưu
+        cài đặt</button>
+    </form>
+    <section class="backup-section">
+      <h3>Dữ liệu của bạn</h3>
+      <p>Ca làm chỉ lưu trên thiết bị này. Hãy tải bản sao lưu để tránh mất sổ khi xóa dữ liệu trình duyệt hoặc đổi máy.
+      </p>
+      <div class="two-columns"><button type="button" class="secondary-button" id="export-backup">Tải bản sao
+          lưu</button><button type="button" class="secondary-button" id="import-backup">Nhập bản sao lưu</button></div>
+      <input type="file" id="backup-file" accept=".json,application/json" hidden><button type="button"
+        class="text-button demo-button" id="show-demo">Xem giao diện với dữ liệu mẫu</button>
+    </section>
+  </dialog>
+  <dialog id="install-dialog" aria-labelledby="install-title">
+    <div class="dialog-header">
+      <h2 id="install-title">Mang sổ theo bên mình</h2><button type="button" class="icon-button" data-close-dialog
+        aria-label="Đóng hướng dẫn"><svg class="icon">
+          <use href="#i-close" />
+        </svg></button>
+    </div>
+    <div class="install-brand"><img src="./assets/icon.svg" width="64" height="64" alt="">
+      <div><strong>Sổ Ghi Ca</strong>
+        <p>Một cuốn sổ nhỏ, cho những ngày chăm chỉ.</p>
+      </div>
+    </div><button id="native-install" type="button" class="primary-button" hidden>Cài đặt Sổ Ghi Ca</button>
+    <div id="installed-message" class="notice" hidden>Bạn đang dùng phiên bản trên màn hình chính.</div>
+    <h3>Trên iPhone / iPad</h3>
+    <ol>
+      <li>Mở đường dẫn của sổ bằng <strong>Safari</strong>.</li>
+      <li>Chạm <strong>Chia sẻ</strong> (ô vuông có mũi tên hướng lên), có thể nằm trong menu <strong>Thêm (…)</strong>.
+      </li>
+      <li>Chọn <strong>Thêm vào MH chính</strong>, bật <strong>Mở dưới dạng ứng dụng web</strong> nếu có, rồi chạm
+        <strong>Thêm</strong>.</li>
+    </ol>
+    <h3>Trên Android</h3>
+    <p>Mở bằng Chrome → menu <strong>⋮</strong> → <strong>Thêm vào màn hình chính</strong> hoặc <strong>Cài đặt ứng
+        dụng</strong>.</p>
+    <div class="offline-note"><svg class="icon">
+        <use href="#i-check" />
+      </svg>
+      <p id="offline-status">Mở sổ một lần khi có mạng để chuẩn bị dùng ngoại tuyến.</p>
+    </div>
+    <p class="helper-text">Nên cài ứng dụng trước khi bắt đầu ghi ca. Nếu sổ trong ứng dụng trống, hãy xuất bản sao lưu
+      từ trình duyệt rồi nhập vào ứng dụng.</p>
+  </dialog>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="dialog-header">
+      <h2 id="confirm-title">Xóa ca làm này?</h2><button type="button" class="icon-button" data-close-dialog
+        aria-label="Hủy"><svg class="icon">
+          <use href="#i-close" />
+        </svg></button>
+    </div>
+    <p id="confirm-message"></p>
+    <div class="confirm-actions"><button type="button" class="secondary-button" id="confirm-cancel">Giữ
+        lại</button><button type="button" class="danger-button" id="confirm-accept">Xóa ca làm</button></div>
+  </dialog>
+  <noscript>
+    <div class="noscript-message">Bạn cần bật JavaScript trong trình duyệt để ghi ca và tính lương.</div>
+  </noscript>
+</body>
+
+</html>
