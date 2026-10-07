@@ -31,7 +31,9 @@ export function timeMinutes(time) {
 export function duration(start,end) { return (timeMinutes(end)-timeMinutes(start)+1440)%1440; }
 export function endTime(start, minutes) { const total=(timeMinutes(start)+minutes)%1440; return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`; }
 export const basePay = shift => Math.round(shift.minutes * shift.rate / 60);
-export const totalPay = shift => basePay(shift)+shift.tip;
+export const afterMidnightMinutes = shift => Math.max(0,timeMinutes(shift.start)+shift.minutes-1440);
+export const lateBonusPay = shift => Math.round(afterMidnightMinutes(shift)*shift.rate/120);
+export const totalPay = shift => basePay(shift)+lateBonusPay(shift)+shift.tip;
 export function validateShift(input) {
   if (!input || typeof input !== 'object') throw new Error('Ca làm không hợp lệ.');
   if (typeof input.id !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(input.id)) throw new Error('Mã ca làm không hợp lệ.');
@@ -58,12 +60,23 @@ export function validateData(input) {
   return data;
 }
 export function summarize(shifts) { return shifts.reduce((sum,s)=>{sum.income+=totalPay(s);sum.minutes+=s.minutes;sum.dates.add(s.date);return sum;},{income:0,minutes:0,dates:new Set()}); }
-export function shiftsInMonth(shifts,month) { return shifts.filter(s=>s.date.slice(0,7)===month).sort((a,b)=>b.date.localeCompare(a.date)||b.start.localeCompare(a.start)||a.id.localeCompare(b.id)); }
+export function moveMonthKey(month, offset) {
+  const [year,value] = month.split('-').map(Number);
+  const date = new Date(year,value-1+offset,1,12);
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+}
+export function payrollMonthForDate(date) { return Number(date.slice(-2))>=26?moveMonthKey(date.slice(0,7),1):date.slice(0,7); }
+export function payrollPeriod(month) { return {start:`${moveMonthKey(month,-1)}-26`,end:`${month}-25`}; }
+export function shiftsInMonth(shifts,month) {
+  const {start,end}=payrollPeriod(month);
+  return shifts.filter(s=>s.date>=start&&s.date<=end).sort((a,b)=>b.date.localeCompare(a.date)||b.start.localeCompare(a.start)||a.id.localeCompare(b.id));
+}
 function csvCell(value) { let text=String(value); if (/^[\s]*[=+\-@\t\r]/.test(text)) text="'"+text; return `"${text.replaceAll('"','""')}"`; }
-export function makeCSV(shifts) { const rows=[['Ngày làm','Công việc','Nơi làm việc','Giờ bắt đầu','Giờ kết thúc','Số phút','Số giờ','Lương/giờ (VND)','Lương ca (VND)','Tip (VND)','Tổng tiền (VND)'],...shifts.map(s=>[s.date,s.job==='cafe'?'Quán Cafe':'Gia sư',s.workplace,s.start,s.end,s.minutes,s.minutes/60,s.rate,basePay(s),s.tip,totalPay(s)])]; return '\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n'); }
+export function makeCSV(shifts) { const rows=[['Ngày làm','Công việc','Nơi làm việc','Giờ bắt đầu','Giờ kết thúc','Số phút','Số giờ','Lương/giờ (VND)','Lương ca (VND)','Phút sau 0h','Phụ cấp sau 0h 50% (VND)','Tip (VND)','Tổng tiền (VND)'],...shifts.map(s=>[s.date,s.job==='cafe'?'Quán Cafe':'Gia sư',s.workplace,s.start,s.end,s.minutes,s.minutes/60,s.rate,basePay(s),afterMidnightMinutes(s),lateBonusPay(s),s.tip,totalPay(s)])]; return '\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n'); }
 export function demoShifts(month) {
+  const previous=moveMonthKey(month,-1);
   return [
-    {id:'demo-26',date:`${month}-26`,job:'cafe',workplace:'Quán The Coffee House',start:'14:00',end:'19:00',minutes:300,rate:25000,tip:30000},
+    {id:'demo-26',date:`${previous}-26`,job:'cafe',workplace:'Quán The Coffee House',start:'14:00',end:'19:00',minutes:300,rate:25000,tip:30000},
     {id:'demo-25',date:`${month}-25`,job:'tutor',workplace:'Gia sư Tiếng Anh IELTS',start:'18:00',end:'20:00',minutes:120,rate:120000,tip:0},
     {id:'demo-23',date:`${month}-23`,job:'cafe',workplace:'Quán The Coffee House',start:'12:30',end:'17:00',minutes:270,rate:25000,tip:0},
     {id:'demo-22',date:`${month}-22`,job:'cafe',workplace:'Quán The Coffee House',start:'17:30',end:'23:00',minutes:330,rate:25000,tip:45000}

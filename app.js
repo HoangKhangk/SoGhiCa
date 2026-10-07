@@ -1,11 +1,11 @@
-import {STORAGE_KEY,defaults,money,hoursText,localDate,duration,normalizeTimeInput,timeMinutes,endTime,basePay,totalPay,validateShift,validateData,summarize,shiftsInMonth,makeCSV,demoShifts} from './core.js';
+import {STORAGE_KEY,defaults,money,hoursText,localDate,duration,normalizeTimeInput,timeMinutes,endTime,basePay,afterMidnightMinutes,lateBonusPay,totalPay,validateShift,validateData,summarize,moveMonthKey,payrollMonthForDate,payrollPeriod,shiftsInMonth,makeCSV,demoShifts} from './core.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const storageKey = `${STORAGE_KEY}:${new URL('.', location.href).pathname}`;
 let data = defaults();
 let storageBroken = false;
-let month = localDate().slice(0,7);
+let month = payrollMonthForDate(localDate());
 let job = 'cafe';
 let filter = 'all';
 let editingId = null;
@@ -57,21 +57,22 @@ const escape = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<'
 function currentShifts() { return shiftsInMonth(demo?demoShifts(month):data.shifts,month); }
 function visibleShifts() { return currentShifts().filter(s=>filter==='all'||s.job===filter); }
 function setMonth(value) {
-  if (!/^(20\d{2}|2100)-(0[1-9]|1[0-2])$/.test(value)) return;
+  if (!/^(20\d{2}-(0[1-9]|1[0-2])|2101-01)$/.test(value)) return;
   month=value; render();
 }
 function moveMonth(offset) {
-  const [year,m]=month.split('-').map(Number);
-  const date=new Date(year,m-1+offset,1);
-  setMonth(localDate(date).slice(0,7));
+  setMonth(moveMonthKey(month,offset));
 }
 function render() {
   const [year,m]=month.split('-');
+  const {start,end}=payrollPeriod(month);
+  const periodLabel=`26/${Number(start.slice(5,7))}/${start.slice(0,4)} – 25/${Number(end.slice(5,7))}/${end.slice(0,4)}`;
   $('#month-title').textContent=`Tháng ${Number(m)} / ${year}`;
   $('#month-input').value=month;
   $('#previous-month').disabled=month==='2000-01';
-  $('#next-month').disabled=month==='2100-12';
+  $('#next-month').disabled=month==='2101-01';
   $('#income-month').textContent=`THÁNG ${Number(m)}`;
+  $('#payroll-period').textContent=`Kỳ công ${periodLabel}`;
   const summary=summarize(currentShifts());
   $('#total-income').textContent=money(summary.income);
   $('#total-hours').textContent=hoursText(summary.minutes);
@@ -84,11 +85,11 @@ function render() {
   $('#demo-notice').hidden=!demo;
   $$('.journal-filters button').forEach(button=>{const selected=button.dataset.filter===filter;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
   const shifts=visibleShifts();
-  $('#journal-count').textContent=shifts.length?`${shifts.length} ca làm · Tháng ${Number(m)}/${year}`:'';
+  $('#journal-count').textContent=shifts.length?`${shifts.length} ca · Kỳ ${periodLabel}`:'';
   $('#export-csv').disabled=!shifts.length;
   if (!shifts.length) {
     const isFiltered=filter!=='all';
-    $('#shift-list').innerHTML=`<div class="empty-state"><div class="empty-icon">${icon('book')}</div><h3>${isFiltered?'Chưa có ca cho công việc này':'Mỗi ngày làm, một dòng ghi nhớ'}</h3><p>${isFiltered?'Chọn “Tất cả” để xem các công việc còn lại.':`Tháng ${Number(m)} chưa có ca nào. Ghi ca đầu tiên để bắt đầu theo dõi thu nhập của bạn nhé.`}</p><button type="button" class="text-button" id="empty-action">${isFiltered?'Xem tất cả công việc':'Xem thử với dữ liệu mẫu'}</button></div>`;
+    $('#shift-list').innerHTML=`<div class="empty-state"><div class="empty-icon">${icon('book')}</div><h3>${isFiltered?'Chưa có ca cho công việc này':'Mỗi ngày làm, một dòng ghi nhớ'}</h3><p>${isFiltered?'Chọn “Tất cả” để xem các công việc còn lại.':`Kỳ lương tháng ${Number(m)} chưa có ca nào. Ghi ca đầu tiên để bắt đầu theo dõi thu nhập của bạn nhé.`}</p><button type="button" class="text-button" id="empty-action">${isFiltered?'Xem tất cả công việc':'Xem thử với dữ liệu mẫu'}</button></div>`;
     $('#empty-action').addEventListener('click',()=>{if(isFiltered){filter='all';render();}else{showDemo();}});
     return;
   }
@@ -97,8 +98,10 @@ function render() {
     const weekday=date.getDay()===0?'CN':`T${date.getDay()+1}`;
     const overnight=timeMinutes(shift.start)+shift.minutes>=1440;
     const period=timeMinutes(shift.start)<720?'Ca sáng':timeMinutes(shift.start)<1080?'Ca chiều':'Ca tối';
-    const description=shift.tip?`Lương ${money(basePay(shift))}đ + Tip ${money(shift.tip)}đ`:`${money(shift.rate)}đ / giờ`;
-    return `<article class="shift-card" data-id="${escape(shift.id)}"><div class="date-tile" aria-label="${escape(shift.date)}"><span>${weekday}</span><strong>${Number(shift.date.slice(-2))}</strong></div><div class="shift-details"><div class="shift-topline"><h3>${escape(shift.workplace)}</h3><span class="time-tag">${shift.start} – ${shift.end}${overnight?' (+1 ngày)':''} (${hoursText(shift.minutes)} tiếng)</span></div><p class="shift-description">${icon('clock')}<span>${period} · ${description}</span></p></div><div class="shift-money"><strong>${money(totalPay(shift))}₫</strong><p class="${shift.tip?'has-tip':''}">${shift.tip?`<span>✦</span> +${compactRate(shift.tip)} tiền tip`:shift.job==='tutor'?'Dạy kèm 1–1':period}</p></div><div class="shift-actions"><button type="button" class="icon-button edit-shift" aria-label="Sửa ca ngày ${shift.date}" ${demo?'disabled title="Dữ liệu mẫu chỉ để xem"':''}>${icon('edit')}</button><button type="button" class="icon-button delete-shift" aria-label="Xóa ca ngày ${shift.date}" ${demo?'disabled title="Dữ liệu mẫu chỉ để xem"':''}>${icon('trash')}</button></div></article>`;
+    const lateMinutes=afterMidnightMinutes(shift),bonus=lateBonusPay(shift);
+    const description=`${money(shift.rate)}đ / giờ${lateMinutes?` · ${hoursText(lateMinutes)}h sau 0h × 50%`:''}`;
+    const extras=[bonus&&`+${money(bonus)}đ sau 0h`,shift.tip&&`+${money(shift.tip)}đ tip`].filter(Boolean);
+    return `<article class="shift-card" data-id="${escape(shift.id)}"><div class="date-tile" aria-label="${escape(shift.date)}"><span>${weekday}</span><strong>${Number(shift.date.slice(-2))}</strong><small>/${Number(shift.date.slice(5,7))}</small></div><div class="shift-details"><div class="shift-topline"><h3>${escape(shift.workplace)}</h3><span class="time-tag">${shift.start} – ${shift.end}${overnight?' (+1 ngày)':''} (${hoursText(shift.minutes)} tiếng)</span></div><p class="shift-description">${icon('clock')}<span>${period} · ${description}</span></p></div><div class="shift-money"><strong>${money(totalPay(shift))}₫</strong><p class="${extras.length?'has-tip':''}">${extras.length?`<span>✦</span> ${extras.join(' · ')}`:shift.job==='tutor'?'Dạy kèm 1–1':period}</p></div><div class="shift-actions"><button type="button" class="icon-button edit-shift" aria-label="Sửa ca ngày ${shift.date}" ${demo?'disabled title="Dữ liệu mẫu chỉ để xem"':''}>${icon('edit')}</button><button type="button" class="icon-button delete-shift" aria-label="Xóa ca ngày ${shift.date}" ${demo?'disabled title="Dữ liệu mẫu chỉ để xem"':''}>${icon('trash')}</button></div></article>`;
   }).join('');
 }
 function compactRate(value) { return value>=1000&&value%1000===0?`${money(value/1000)}k`:`${money(value)}đ`; }
@@ -113,13 +116,15 @@ function updateEstimate() {
   const start=normalizeTimeInput($('#start-time').value), end=normalizeTimeInput($('#end-time').value);
   const valid=Number.isInteger(minutes)&&minutes>0&&minutes<=1440&&Number.isFinite(rate)&&rate>=0&&Number.isFinite(tip)&&tip>=0&&start!==null&&end!==null&&endTime(start,minutes)===end;
   const hours=valid?hoursText(minutes):'—';
+  const lateMinutes=valid?afterMidnightMinutes({start,minutes}):0;
+  const bonus=valid?Math.round(lateMinutes*rate/120):0;
   $('#duration-label').textContent=`${hours} giờ`;
   $('#auto-description').textContent=`Tự động tính: ${hours} tiếng`;
   let nextDay=false;
   try {nextDay=valid&&timeMinutes(start)+minutes>=1440;}catch{}
   $('#time-description').textContent=`Từ ${start||'—'} đến ${end||'—'}${nextDay?' (hôm sau)':''}`;
-  $('#estimate-formula').textContent=valid?`(${hours}h × ${money(rate)}đ${tip?` + ${money(tip)}đ tip`:''})`:'Nhập đủ giờ làm và đơn giá';
-  $('#estimated-pay').textContent=valid?`${money(Math.round(minutes*rate/60)+tip)}₫`:'—';
+  $('#estimate-formula').textContent=valid?`(${hours}h × ${money(rate)}đ${lateMinutes?` + ${hoursText(lateMinutes)}h sau 0h × 50%`:''}${tip?` + ${money(tip)}đ tip`:''})`:'Nhập đủ giờ làm và đơn giá';
+  $('#estimated-pay').textContent=valid?`${money(Math.round(minutes*rate/60)+bonus+tip)}₫`:'—';
   $$('.hour-presets button').forEach(button=>{const selected=minutes===Number(button.dataset.hours)*60;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
 }
 function syncTimes() {
@@ -198,7 +203,7 @@ $('#shift-form').addEventListener('submit',event=>{
       const shifts=editingId?current.shifts.map(s=>s.id===editingId?shift:s):[...current.shifts,shift];
       return {...current,shifts};
     });
-    demo=false;month=shift.date.slice(0,7);filter='all';resetForm();render();
+    demo=false;month=payrollMonthForDate(shift.date);filter='all';resetForm();render();
     toast(wasEditing?'Đã cập nhật ca làm.':'Đã lưu ca làm. Thêm một ngày chăm chỉ!');
     navigator.storage?.persist?.().catch(()=>{});
   }catch(error){$('#form-error').textContent=error.message;$('#form-error').hidden=false;}
@@ -224,7 +229,7 @@ $('#shift-list').addEventListener('click',async event=>{
   $('#form-heading').scrollIntoView({behavior:'smooth',block:'start'});$('#workplace').focus({preventScroll:true});
 });
 $('.journal-filters').addEventListener('click',event=>{const button=event.target.closest('[data-filter]');if(button){filter=button.dataset.filter;render();}});
-$('#export-csv').addEventListener('click',()=>download(makeCSV(visibleShifts()),`so-ghi-ca-${month}${demo?'-mau':''}.csv`,'text/csv;charset=utf-8'));
+$('#export-csv').addEventListener('click',()=>download(makeCSV(visibleShifts()),`so-ghi-ca-ky-luong-${month}${demo?'-mau':''}.csv`,'text/csv;charset=utf-8'));
 $('#open-settings').addEventListener('click',openSettings);
 $('#backup-shortcut').addEventListener('click',()=>{openSettings();$('.backup-section').scrollIntoView({block:'nearest'});});
 $$('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close('cancel')));
