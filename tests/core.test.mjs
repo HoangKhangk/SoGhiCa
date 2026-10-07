@@ -14,6 +14,10 @@ test('overnight shifts receive a 50% bonus for the portion after midnight',()=>{
   assert.equal(afterMidnightMinutes(shift),150);assert.equal(lateBonusPay(shift),31250);assert.equal(totalPay(shift),173750);
   const fifteenMinutes={...shift,start:'23:30',end:'00:15',minutes:45,tip:0};
   assert.equal(afterMidnightMinutes(fifteenMinutes),15);assert.equal(lateBonusPay(fifteenMinutes),3125);assert.equal(totalPay(fifteenMinutes),21875);
+  const midnightHour={...shift,start:'00:00',end:'01:00',minutes:60,tip:0};
+  assert.equal(afterMidnightMinutes(midnightHour),60);assert.equal(lateBonusPay(midnightHour),12500);assert.equal(totalPay(midnightHour),37500);
+  const earlyMorning={...shift,start:'05:30',end:'06:30',minutes:60,tip:0};
+  assert.equal(afterMidnightMinutes(earlyMorning),30);assert.equal(totalPay(earlyMorning),31250);
   assert.equal(afterMidnightMinutes({...shift,start:'14:00',end:'18:00',minutes:240}),0);
   assert.equal(totalPay({...shift,minutes:1,tip:0}),417);assert.equal(duration('14:00','14:00'),0);assert.equal(endTime('14:00',1440),'14:00');
 });

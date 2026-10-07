@@ -31,7 +31,13 @@ export function timeMinutes(time) {
 export function duration(start,end) { return (timeMinutes(end)-timeMinutes(start)+1440)%1440; }
 export function endTime(start, minutes) { const total=(timeMinutes(start)+minutes)%1440; return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`; }
 export const basePay = shift => Math.round(shift.minutes * shift.rate / 60);
-export const afterMidnightMinutes = shift => Math.max(0,timeMinutes(shift.start)+shift.minutes-1440);
+export function afterMidnightMinutes(shift) {
+  const start=timeMinutes(shift.start), end=start+shift.minutes;
+  // Count the 00:00–06:00 night window on the starting day and, for an
+  // overnight shift, on the following day as well.
+  const overlap=(from,to)=>Math.max(0,Math.min(end,to)-Math.max(start,from));
+  return overlap(0,360)+overlap(1440,1800);
+}
 export const lateBonusPay = shift => Math.round(afterMidnightMinutes(shift)*shift.rate/120);
 export const totalPay = shift => basePay(shift)+lateBonusPay(shift)+shift.tip;
 export function validateShift(input) {

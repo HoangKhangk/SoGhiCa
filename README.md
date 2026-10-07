@@ -6,7 +6,7 @@ Web tĩnh ghi ca và tính lương cá nhân, dựa trên mẫu thiết kế xan
 
 - Thêm, sửa, xóa ca làm; chọn Quán Cafe / Gia sư, nhập nơi làm, ngày và giờ.
 - Tính giờ tự động, hỗ trợ ca qua nửa đêm, chọn nhanh hoặc nhập số giờ (quy đổi đến phút gần nhất).
-- Tiền ca = lương giờ làm + phụ cấp 50% cho phần thời gian của ca kéo dài qua 0:00 + tiền tip. Phút lẻ sau 0:00 được tính theo tỷ lệ và tổng tiền làm tròn đến đồng.
+- Tiền ca = lương giờ làm + phụ cấp 50% cho phần thời gian trong khung 00:00–06:00 + tiền tip. Quy tắc áp dụng cho cả ca kéo dài qua 0:00 và ca được nhập bắt đầu sau 0:00; phút lẻ được tính theo tỷ lệ và tổng tiền làm tròn đến đồng.
 - Thống kê thu nhập, giờ làm và số ngày theo kỳ lương chốt ngày 25: lương tháng này gồm ca từ ngày 26 tháng trước đến hết ngày 25 tháng này. Nhiều ca cùng ngày chỉ tính một ngày; ca qua đêm được tính vào ngày bắt đầu.
 - Lọc công việc. Thống kê đầu trang luôn tính cả tháng; CSV xuất theo bộ lọc hiện tại.
 - Thay tên, giới thiệu, nơi làm và đơn giá mặc định trong Góc cá nhân (bấm tên/avatar).
