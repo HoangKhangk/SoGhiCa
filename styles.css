@@ -6,6 +6,10 @@
 @media(max-width:359px){.main-container{padding:14px 10px}.entry-card{padding:16px}.income-banner{padding:20px 17px}.income-value{font-size:2.15rem}.stat{padding:11px 9px}.stat strong{font-size:.96rem}.stat-icon{width:29px;height:29px}.stat-icon svg{width:20px;height:20px}.shift-card{grid-template-columns:36px minmax(0,1fr);gap:8px}.shift-money{grid-column:2;text-align:left}.shift-actions{grid-column:2;grid-row:3;justify-content:flex-end;margin-top:-37px}.date-tile{grid-row:1}.shift-details{grid-row:1}.time-summary{flex-wrap:wrap}.personal-tag{font-size:.6rem}}
 .time-input-hint{margin:7px 0;color:var(--muted);font-size:.75rem;line-height:1.5}
 .date-tile small{font-size:.58rem;font-weight:700;line-height:1;color:#4f8b78}
+.payroll-cutoff{display:inline-flex;align-items:center;margin-top:11px;padding:8px 12px;border:1px solid #b8f1da;border-radius:9px;background:#fff;color:#006b50;font-size:.76rem;font-weight:750;line-height:1.4;box-shadow:0 2px 8px #004d3a1f}
+.payroll-cutoff[data-state="today"]{background:#fff4c9;color:#6f5100;border-color:#ffe083}
+.journal-history-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+@media(max-width:760px){.journal-bottom{align-items:flex-start}.journal-history-actions{width:100%;justify-content:space-between;gap:8px}.journal-history-actions .text-button{flex:1;justify-content:center;text-align:center}}
 /* Keep narrow layouts within the viewport, including long time labels and amounts. */
 html,body{max-width:100%;overflow-x:clip}
 .workspace>*,.income-copy,.shift-details,.profile,.profile-copy{min-width:0}

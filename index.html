@@ -14,8 +14,8 @@
   <link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
   <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js"></script>
+  <link rel="stylesheet" href="./styles.css?v=10">
+  <script type="module" src="./app.js?v=10"></script>
 </head>
 
 <body>
@@ -112,6 +112,7 @@
         <h1 id="income-label">💰 THU NHẬP <span id="income-month">THÁNG NÀY</span> CỦA BẠN</h1>
         <div class="income-value"><span id="total-income">0</span><span class="currency">₫</span></div>
         <p><span id="payroll-period">Kỳ công ngày 26 – 25</span> · Đã gồm lương, phụ cấp sau 0h & tiền tip</p>
+        <div class="payroll-cutoff" id="payroll-cutoff" role="status">📌 CHỐT CÔNG: Đang tính…</div>
       </div>
       <div class="stat-group">
         <div class="stat"><span class="stat-icon"><svg>
@@ -203,10 +204,12 @@
               sư</button></div>
         </div>
         <div id="shift-list" class="shift-list" aria-live="polite"></div>
-        <div class="journal-bottom"><span id="journal-count"></span><button type="button" id="export-csv"
-            class="text-button"><svg class="icon">
-              <use href="#i-download" />
-            </svg>Xuất bảng lương</button></div>
+        <div class="journal-bottom"><span id="journal-count"></span>
+          <div class="journal-history-actions"><button type="button" id="view-previous-period" class="text-button">Xem kỳ tháng trước</button><button type="button" id="view-current-period" class="text-button" hidden>Về kỳ hiện tại</button><button type="button" id="export-csv"
+              class="text-button"><svg class="icon">
+                <use href="#i-download" />
+              </svg>Xuất bảng lương</button></div>
+        </div>
       </section>
     </div>
     <div class="utility-row"><span id="local-status"><svg class="icon">

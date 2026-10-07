@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {defaults,duration,normalizeTimeInput,endTime,afterMidnightMinutes,lateBonusPay,totalPay,validateShift,validateData,summarize,moveMonthKey,payrollMonthForDate,payrollPeriod,shiftsInMonth,makeCSV,validDate,demoShifts} from '../core.js';
+import {defaults,duration,normalizeTimeInput,endTime,afterMidnightMinutes,lateBonusPay,totalPay,validateShift,validateData,summarize,moveMonthKey,payrollMonthForDate,payrollPeriod,payrollCutoffStatus,shiftsInMonth,makeCSV,validDate,demoShifts} from '../core.js';
 const shift={id:'test-1',date:'2026-10-06',job:'cafe',workplace:'Quán Cafe',start:'22:00',end:'02:30',minutes:270,rate:25000,tip:30000};
 test('typed hours normalize without accepting incomplete or impossible times',()=>{
   for(const [input,expected] of [['8','08:00'],['18','18:00'],['830','08:30'],['1830','18:30'],['8:30','08:30'],['00:00','00:00'],['2359','23:59'],[' 9:30 ','09:30']])assert.equal(normalizeTimeInput(input),expected);
@@ -28,6 +28,10 @@ test('payroll month closes on the 25th and starts on the previous month 26th',()
   assert.equal(payrollMonthForDate('2026-10-26'),'2026-11');
   assert.equal(payrollMonthForDate('2026-12-31'),'2027-01');
   assert.equal(moveMonthKey('2026-01',-1),'2025-12');
+  assert.deepEqual(payrollCutoffStatus('2026-10','2026-10-07'),{state:'active',text:'Còn 18 ngày nữa đến ngày chốt công 25/10/2026'});
+  assert.deepEqual(payrollCutoffStatus('2026-10','2026-10-25'),{state:'today',text:'Hôm nay chốt công'});
+  assert.deepEqual(payrollCutoffStatus('2026-10','2026-10-26'),{state:'closed',text:'Đã chốt công ngày 25/10/2026'});
+  assert.deepEqual(payrollCutoffStatus('2026-11','2026-10-25'),{state:'upcoming',text:'Kỳ công bắt đầu ngày 26/10/2026'});
   const entries=[shift,{...shift,id:'test-2',start:'14:00',end:'18:30'},{...shift,id:'test-3',date:'2026-09-25'},{...shift,id:'test-4',date:'2026-09-26'},{...shift,id:'test-5',date:'2026-10-25'},{...shift,id:'test-6',date:'2026-10-26'}];
   const monthly=shiftsInMonth(entries,'2026-10');const summary=summarize(monthly);
   assert.deepEqual(monthly.map(s=>s.id),['test-5','test-1','test-2','test-4']);

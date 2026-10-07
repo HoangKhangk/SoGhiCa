@@ -73,6 +73,16 @@ export function moveMonthKey(month, offset) {
 }
 export function payrollMonthForDate(date) { return Number(date.slice(-2))>=26?moveMonthKey(date.slice(0,7),1):date.slice(0,7); }
 export function payrollPeriod(month) { return {start:`${moveMonthKey(month,-1)}-26`,end:`${month}-25`}; }
+export function payrollCutoffStatus(month, today=localDate()) {
+  const {start,end}=payrollPeriod(month);
+  const endLabel=`25/${Number(end.slice(5,7))}/${end.slice(0,4)}`;
+  if(today>end)return {state:'closed',text:`Đã chốt công ngày ${endLabel}`};
+  if(today<start)return {state:'upcoming',text:`Kỳ công bắt đầu ngày 26/${Number(start.slice(5,7))}/${start.slice(0,4)}`};
+  if(today===end)return {state:'today',text:'Hôm nay chốt công'};
+  const asUTC=value=>{const [year,month,day]=value.split('-').map(Number);return Date.UTC(year,month-1,day);};
+  const days=Math.round((asUTC(end)-asUTC(today))/86400000);
+  return {state:'active',text:`Còn ${days} ngày nữa đến ngày chốt công ${endLabel}`};
+}
 export function shiftsInMonth(shifts,month) {
   const {start,end}=payrollPeriod(month);
   return shifts.filter(s=>s.date>=start&&s.date<=end).sort((a,b)=>b.date.localeCompare(a.date)||b.start.localeCompare(a.start)||a.id.localeCompare(b.id));

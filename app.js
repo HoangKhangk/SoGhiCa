@@ -1,4 +1,4 @@
-import {STORAGE_KEY,defaults,money,hoursText,localDate,duration,normalizeTimeInput,timeMinutes,endTime,basePay,afterMidnightMinutes,lateBonusPay,totalPay,validateShift,validateData,summarize,moveMonthKey,payrollMonthForDate,payrollPeriod,shiftsInMonth,makeCSV,demoShifts} from './core.js';
+import {STORAGE_KEY,defaults,money,hoursText,localDate,duration,normalizeTimeInput,timeMinutes,endTime,basePay,afterMidnightMinutes,lateBonusPay,totalPay,validateShift,validateData,summarize,moveMonthKey,payrollMonthForDate,payrollPeriod,payrollCutoffStatus,shiftsInMonth,makeCSV,demoShifts} from './core.js?v=10';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -73,6 +73,9 @@ function render() {
   $('#next-month').disabled=month==='2101-01';
   $('#income-month').textContent=`THÁNG ${Number(m)}`;
   $('#payroll-period').textContent=`Kỳ công ${periodLabel}`;
+  const cutoff=payrollCutoffStatus(month);
+  $('#payroll-cutoff').textContent=`📌 CHỐT CÔNG: ${cutoff.text}`;
+  $('#payroll-cutoff').dataset.state=cutoff.state;
   const summary=summarize(currentShifts());
   $('#total-income').textContent=money(summary.income);
   $('#total-hours').textContent=hoursText(summary.minutes);
@@ -87,6 +90,8 @@ function render() {
   const shifts=visibleShifts();
   $('#journal-count').textContent=shifts.length?`${shifts.length} ca · Kỳ ${periodLabel}`:'';
   $('#export-csv').disabled=!shifts.length;
+  $('#view-previous-period').disabled=month==='2000-01';
+  $('#view-current-period').hidden=month===payrollMonthForDate(localDate());
   if (!shifts.length) {
     const isFiltered=filter!=='all';
     $('#shift-list').innerHTML=`<div class="empty-state"><div class="empty-icon">${icon('book')}</div><h3>${isFiltered?'Chưa có ca cho công việc này':'Mỗi ngày làm, một dòng ghi nhớ'}</h3><p>${isFiltered?'Chọn “Tất cả” để xem các công việc còn lại.':`Kỳ lương tháng ${Number(m)} chưa có ca nào. Ghi ca đầu tiên để bắt đầu theo dõi thu nhập của bạn nhé.`}</p><button type="button" class="text-button" id="empty-action">${isFiltered?'Xem tất cả công việc':'Xem thử với dữ liệu mẫu'}</button></div>`;
@@ -229,6 +234,8 @@ $('#shift-list').addEventListener('click',async event=>{
   $('#form-heading').scrollIntoView({behavior:'smooth',block:'start'});$('#workplace').focus({preventScroll:true});
 });
 $('.journal-filters').addEventListener('click',event=>{const button=event.target.closest('[data-filter]');if(button){filter=button.dataset.filter;render();}});
+$('#view-previous-period').addEventListener('click',()=>{moveMonth(-1);$('#journal-title').scrollIntoView({behavior:'smooth',block:'start'});});
+$('#view-current-period').addEventListener('click',()=>{setMonth(payrollMonthForDate(localDate()));$('#journal-title').scrollIntoView({behavior:'smooth',block:'start'});});
 $('#export-csv').addEventListener('click',()=>download(makeCSV(visibleShifts()),`so-ghi-ca-ky-luong-${month}${demo?'-mau':''}.csv`,'text/csv;charset=utf-8'));
 $('#open-settings').addEventListener('click',openSettings);
 $('#backup-shortcut').addEventListener('click',()=>{openSettings();$('.backup-section').scrollIntoView({block:'nearest'});});

@@ -8,6 +8,7 @@ Web tĩnh ghi ca và tính lương cá nhân, dựa trên mẫu thiết kế xan
 - Tính giờ tự động, hỗ trợ ca qua nửa đêm, chọn nhanh hoặc nhập số giờ (quy đổi đến phút gần nhất).
 - Tiền ca = lương giờ làm + phụ cấp 50% cho phần thời gian trong khung 00:00–06:00 + tiền tip. Quy tắc áp dụng cho cả ca kéo dài qua 0:00 và ca được nhập bắt đầu sau 0:00; phút lẻ được tính theo tỷ lệ và tổng tiền làm tròn đến đồng.
 - Thống kê thu nhập, giờ làm và số ngày theo kỳ lương chốt ngày 25: lương tháng này gồm ca từ ngày 26 tháng trước đến hết ngày 25 tháng này. Nhiều ca cùng ngày chỉ tính một ngày; ca qua đêm được tính vào ngày bắt đầu.
+- Nút **Xem kỳ tháng trước** mở lại đầy đủ ngày làm, giờ bắt đầu–kết thúc, phụ cấp, tip và tiền từng ca; nút **Về kỳ hiện tại** đưa sổ về tháng đang tính lương.
 - Lọc công việc. Thống kê đầu trang luôn tính cả tháng; CSV xuất theo bộ lọc hiện tại.
 - Thay tên, giới thiệu, nơi làm và đơn giá mặc định trong Góc cá nhân (bấm tên/avatar).
 - Lưu dữ liệu ngay trên thiết bị, xuất/nhập sao lưu JSON, xuất bảng lương CSV (UTF-8).
@@ -58,7 +59,7 @@ Khi nhiều cửa sổ cùng mở, thay đổi được cập nhật qua sự ki
 
 ## Cập nhật phiên bản
 
-Sau khi sửa tệp ứng dụng, tăng phiên bản trong `CACHE_NAME` ở `sw.js` (ví dụ `v1` → `v2`) rồi đẩy lên GitHub. Lần mở lại có mạng, ứng dụng sẽ báo phiên bản mới và cho người dùng chủ động tải lại. Chỉ cache riêng của ứng dụng này được dọn dẹp; dữ liệu ca không nằm trong cache.
+Sau khi sửa tệp ứng dụng, tăng cùng số phiên bản ở đường dẫn `app.js`, `styles.css`, phần import `core.js`, danh sách `FILES` và `CACHE_NAME` trong `sw.js`, rồi đẩy lên GitHub. Trên localhost ứng dụng tự thay bản cũ; bản đã cài trên điện thoại báo phiên bản mới để người dùng tải lại. Điều hướng ưu tiên lấy giao diện mới khi có mạng và dùng bản đã lưu khi ngoại tuyến. Chỉ cache riêng của ứng dụng này được dọn dẹp; dữ liệu ca không nằm trong cache.
 
 ## Kiểm tra khi phát triển
 
